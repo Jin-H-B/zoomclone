@@ -1,7 +1,17 @@
 import express from "express";
 
 const app = express();
+const PORT = 3000;
 
-console.log("hello zoome clone");
+app.set("view engine", "pug");
+app.set("views", __dirname + "/views");
 
-app.listen(3000);
+app.use("/public", express.static(__dirname + "/public"));
+
+app.get("/", (req, res) => res.render("home.pug"));
+
+const handleListen = () => {
+  console.log(`Listening on port http://localhost:${PORT}`);
+};
+
+app.listen(PORT, handleListen);
