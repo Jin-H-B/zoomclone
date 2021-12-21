@@ -6,3 +6,4 @@ Zomme clone using NodeJS, WebRTC and Websockets
 2. create babel.config.json && nodemone.json, /src/server.js
 3. npm i @babel/core @babel/cli @babel/node -D,, npm i @babel/preset-env -D
 4. npm i express, npm i pug
+5. after backend setup and frontend setup, npm i ws
