@@ -1,5 +1,5 @@
 import express from "express";
-import WebSocket, { WebSocketServer } from "ws";
+import { WebSocketServer } from "ws";
 import http from "http";
 
 const app = express();
@@ -25,11 +25,12 @@ const wss = new WebSocketServer({ server }); //http 서버 위에 웹소켓서�
 //백엔드에서 프론트엔드로의 연결 소켓
 wss.on("connection", (socket) => {
   console.log("Connected to Browser✅");
-  socket.send("hello"); //socket으로 data전송, 프론트 소켓에서 데이터 받도록 설정
+  //   socket.send("hello"); //socket으로 data전송, 프론트 소켓에서 데이터 받도록 설정
   socket.on("close", () => console.log("Disconnected with the Browser❌"));
-  socket.on("message", (message) =>
-    console.log("Message from the Browser:", message.toString("utf8"))
-  );
+  socket.on("message", (message) => {
+    console.log("Message from the Browser:", message.toString("utf8"));
+    socket.send(message.toString("utf8")); //브라우저로 메시지 전송
+  });
 });
 
 server.listen(PORT, handleListen);
