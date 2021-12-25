@@ -8,6 +8,13 @@ let roomName = "";
 
 room.hidden = true; //처음에 room을 숨김
 
+const paintMessage = (message) => {
+  const ul = room.querySelector("ul");
+  const li = document.createElement("li");
+  li.innerText = message;
+  ul.append(li);
+};
+
 //입장하면 showRoom
 const showRoom = () => {
   welcome.hidden = true;
@@ -20,9 +27,13 @@ const handleRoomSubmit = (event) => {
   event.preventDefault();
   const input = form.querySelector("input");
   //socket.emit(event, obj, or variables.., cb)
-  socket.emit("enterRoom", { payload: input.value }, showRoom); //websocket에서는 socket.send()였음. event이름은 작위적
+  socket.emit("enterRoom", input.value, showRoom); //websocket에서는 socket.send()였음. event이름은 작위적
   roomName = input.value;
   input.value = "";
 };
 
 form.addEventListener("submit", handleRoomSubmit);
+
+socket.on("welcome", () => {
+  paintMessage("Someone joined");
+});
