@@ -25,9 +25,15 @@ const httpServer = http.createServer(app); //http서버에 접근
 const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
+  socket.onAny((event) => {
+    console.log(`Socket Event:${event}`); //이벤트명 출력..middleware와 비슷
+  });
   //event이름은 작위적임 , socket.on(evnet, (msg, cb))
-  socket.on("enterRoom", (msg, cb) => {
-    console.log(msg); //백엔드
+  socket.on("enterRoom", (roomName, cb) => {
+    // console.log(roomName); //백엔드
+
+    socket.join(roomName); //roomName의 이름을 갖는 room 생성
+    console.log(socket.rooms); //어디 room에 있는지 log
     setTimeout(() => {
       cb(); //프론트에서 작동
     }, 5000);
