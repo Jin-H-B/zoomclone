@@ -36,6 +36,13 @@ wsServer.on("connection", (socket) => {
     showRoomCb(); //프론트에서 작동
     socket.to(roomName).emit("welcome"); //자신을 제외하고 메시지전송
   });
+  socket.on("disconnecting", () => {
+    socket.rooms.forEach((room) => socket.to(room).emit("bye"));
+  });
+  socket.on("newMessage", (msg, room, cb) => {
+    socket.to(room).emit("newMessage", msg);
+    cb();
+  });
 });
 
 httpServer.listen(PORT, handleListen);

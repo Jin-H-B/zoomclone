@@ -15,12 +15,24 @@ const paintMessage = (message) => {
   ul.append(li);
 };
 
+const handleMessageSubmit = (event) => {
+  event.preventDefault();
+  const input = room.querySelector("input");
+  socket.emit("newMessage", input.value, roomName, () => {
+    paintMessage(`You: ${input.value}`); //이부분이 있어야 자신도 메시지 볼 수 있음
+    input.value = "";
+  });
+};
+
 //입장하면 showRoom
 const showRoom = () => {
   welcome.hidden = true;
   room.hidden = false;
   const h3 = room.querySelector("h3");
   h3.innerText = `Room ${roomName}`;
+  //message기능
+  const form = room.querySelector("form");
+  form.addEventListener("submit", handleMessageSubmit);
 };
 
 const handleRoomSubmit = (event) => {
@@ -36,4 +48,12 @@ form.addEventListener("submit", handleRoomSubmit);
 
 socket.on("welcome", () => {
   paintMessage("Someone joined");
+});
+
+socket.on("bye", () => {
+  paintMessage("Someone left");
+});
+
+socket.on("newMessage", (message) => {
+  paintMessage(message);
 });
