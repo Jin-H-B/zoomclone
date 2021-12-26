@@ -25,6 +25,7 @@ const httpServer = http.createServer(app); //http서버에 접근
 const wsServer = SocketIO(httpServer);
 
 wsServer.on("connection", (socket) => {
+  socket["nickname"] = "Anon"; //socket은 obj
   socket.onAny((event) => {
     console.log(`Socket Event:${event}`); //이벤트명 출력..middleware와 비슷
   });
@@ -34,14 +35,19 @@ wsServer.on("connection", (socket) => {
     socket.join(roomName); //roomName의 이름을 갖는 room 생성
     console.log(socket.rooms); //어디 room에 있는지 log
     showRoomCb(); //프론트에서 작동
-    socket.to(roomName).emit("welcome"); //자신을 제외하고 메시지전송
+    socket.to(roomName).emit("welcome", socket.nickname); //자신을 제외하고 메시지전송
   });
   socket.on("disconnecting", () => {
-    socket.rooms.forEach((room) => socket.to(room).emit("bye"));
+    socket.rooms.forEach((room) =>
+      socket.to(room).emit("bye", socket.nickname)
+    );
   });
   socket.on("newMessage", (msg, room, cb) => {
-    socket.to(room).emit("newMessage", msg);
+    socket.to(room).emit("newMessage", `${socket.nickname}: ${msg}`);
     cb();
+  });
+  socket.on("nickname", (nickname) => {
+    socket["nickname"] = nickname;
   });
 });
 

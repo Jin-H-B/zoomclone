@@ -11,13 +11,17 @@ html(lang="en")
             h1 zoomclone
         main
             div#welcome
-                form 
+                form#nickname
+                    input(placeholder="Nickname", requrired, type="text")
+                    button Save
+                form#roomName
                     input(placeholder="Room name", requrired, type="text")
                     button Enter Room
+                
             div#room
                 h3
                 ul 
-                form
+                form#msg
                     input(placeholder="Message", requrired, type="text")
                     button Send
            

@@ -1,8 +1,9 @@
 const socket = io(); //백엔드와 소켓 연결
 
 const welcome = document.getElementById("welcome");
-const form = welcome.querySelector("form");
+const roomNameForm = welcome.querySelector("#roomName");
 const room = document.getElementById("room");
+const nicknameForm = welcome.querySelector("#nickname");
 
 let roomName = "";
 
@@ -17,11 +18,17 @@ const paintMessage = (message) => {
 
 const handleMessageSubmit = (event) => {
   event.preventDefault();
-  const input = room.querySelector("input");
+  const input = room.querySelector("#msg input");
   socket.emit("newMessage", input.value, roomName, () => {
     paintMessage(`You: ${input.value}`); //이부분이 있어야 자신도 메시지 볼 수 있음
     input.value = "";
   });
+};
+
+const handleNameSubmit = (event) => {
+  event.preventDefault();
+  const input = welcome.querySelector("#nickname input");
+  socket.emit("nickname", input.value);
 };
 
 //입장하면 showRoom
@@ -31,27 +38,30 @@ const showRoom = () => {
   const h3 = room.querySelector("h3");
   h3.innerText = `Room ${roomName}`;
   //message기능
-  const form = room.querySelector("form");
-  form.addEventListener("submit", handleMessageSubmit);
+  const msgForm = room.querySelector("#msg");
+
+  msgForm.addEventListener("submit", handleMessageSubmit);
 };
 
 const handleRoomSubmit = (event) => {
   event.preventDefault();
-  const input = form.querySelector("input");
+  const input = welcome.querySelector("#roomName input");
   //socket.emit(event, obj, or variables.., cb)
   socket.emit("enterRoom", input.value, showRoom); //websocket에서는 socket.send()였음. event이름은 작위적
   roomName = input.value;
   input.value = "";
 };
 
-form.addEventListener("submit", handleRoomSubmit);
+roomNameForm.addEventListener("submit", handleRoomSubmit);
 
-socket.on("welcome", () => {
-  paintMessage("Someone joined");
+nicknameForm.addEventListener("submit", handleNameSubmit);
+
+socket.on("welcome", (user) => {
+  paintMessage(`${user} joined`);
 });
 
-socket.on("bye", () => {
-  paintMessage("Someone left");
+socket.on("bye", (user) => {
+  paintMessage(`${user} left`);
 });
 
 socket.on("newMessage", (message) => {
