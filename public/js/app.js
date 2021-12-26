@@ -67,3 +67,14 @@ socket.on("bye", (user) => {
 socket.on("newMessage", (message) => {
   paintMessage(message);
 });
+
+socket.on("roomChange", (rooms) => {
+  const roomList = welcome.querySelector("ul");
+  roomList.innerText = ""; //룸 리스트를 우선 초기화
+  //다시 현재 열려있는 public rooms 리스트에 대해 paint(disconnect 된 room은 리스트에서 빠짐)
+  rooms.forEach((room) => {
+    const li = document.createElement("li");
+    li.innerText = room;
+    roomList.append(li);
+  });
+});

@@ -1,5 +1,4 @@
 import express from "express";
-// import { WebSocketServer } from "ws";
 import SocketIO from "socket.io";
 import http from "http";
 
@@ -21,8 +20,22 @@ const handleListen = () => {
 // app.listen(PORT, handleListen); //http만 돌릴때
 
 const httpServer = http.createServer(app); //http서버에 접근
-
 const wsServer = SocketIO(httpServer);
+
+const publicRooms = () => {
+  const {
+    sockets: {
+      adapter: { sids, rooms },
+    },
+  } = wsServer;
+  const publicRooms = [];
+  rooms.forEach((value, key) => {
+    if (sids.get(key) === undefined) {
+      publicRooms.push(key);
+    }
+  });
+  return publicRooms;
+};
 
 wsServer.on("connection", (socket) => {
   socket["nickname"] = "Anon"; //socket은 obj
@@ -33,15 +46,22 @@ wsServer.on("connection", (socket) => {
   socket.on("enterRoom", (roomName, showRoomCb) => {
     // console.log(roomName); //백엔드
     socket.join(roomName); //roomName의 이름을 갖는 room 생성
-    console.log(socket.rooms); //어디 room에 있는지 log
+    // console.log(socket.rooms); //어디 room에 있는지 log
+    // console.log(wsServer.sockets.adapter);
     showRoomCb(); //프론트에서 작동
     socket.to(roomName).emit("welcome", socket.nickname); //자신을 제외하고 메시지전송
+    wsServer.sockets.emit("roomChange", publicRooms()); //모든 소켓에 대해 publicRomms 리스트를
   });
+  //disconnecting은 dis 직전, disconnect는 dis 후
   socket.on("disconnecting", () => {
     socket.rooms.forEach((room) =>
       socket.to(room).emit("bye", socket.nickname)
     );
   });
+  socket.on("disconnect", () => {
+    wsServer.sockets.emit("roomChange", publicRooms()); //모든 소켓에 대해 publicRomms 리스트를
+  });
+
   socket.on("newMessage", (msg, room, cb) => {
     socket.to(room).emit("newMessage", `${socket.nickname}: ${msg}`);
     cb();
