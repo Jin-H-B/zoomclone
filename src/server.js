@@ -37,6 +37,10 @@ const publicRooms = () => {
   return publicRooms;
 };
 
+const countRoom = (roomName) => {
+  return wsServer.sockets.adapter.rooms.get(roomName)?.size; //roomName은 Set이므로 size사용
+};
+
 wsServer.on("connection", (socket) => {
   socket["nickname"] = "Anon"; //socket은 obj
   socket.onAny((event) => {
@@ -47,16 +51,16 @@ wsServer.on("connection", (socket) => {
     // console.log(roomName); //백엔드
     socket.join(roomName); //roomName의 이름을 갖는 room 생성
     // console.log(socket.rooms); //어디 room에 있는지 log
-    // console.log(wsServer.sockets.adapter);
+
     showRoomCb(); //프론트에서 작동
-    socket.to(roomName).emit("welcome", socket.nickname); //자신을 제외하고 메시지전송
+    socket.to(roomName).emit("welcome", socket.nickname, countRoom(roomName)); //자신을 제외하고 메시지전송
     wsServer.sockets.emit("roomChange", publicRooms()); //모든 소켓에 대해 publicRomms 리스트를
   });
   //disconnecting은 dis 직전, disconnect는 dis 후
   socket.on("disconnecting", () => {
-    socket.rooms.forEach((room) =>
-      socket.to(room).emit("bye", socket.nickname)
-    );
+    socket.rooms.forEach((room) => {
+      socket.to(room).emit("bye", socket.nickname, countRoom(room) - 1); //떠나기 직전이므로 -1
+    });
   });
   socket.on("disconnect", () => {
     wsServer.sockets.emit("roomChange", publicRooms()); //모든 소켓에 대해 publicRomms 리스트를
