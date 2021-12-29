@@ -1,85 +1,93 @@
 const socket = io(); //백엔드와 소켓 연결
 
-const welcome = document.getElementById("welcome");
-const roomNameForm = welcome.querySelector("#roomName");
-const room = document.getElementById("room");
-const nicknameForm = welcome.querySelector("#nickname");
+const myFace = document.getElementById("myFace");
+const muteBtn = document.getElementById("mute");
+const cameraBtn = document.getElementById("camera");
+const camerasSelect = document.getElementById("cameras");
 
-let roomName = "";
+let myStream;
+let muted = false;
+let cameraOff = false;
 
-room.hidden = true; //처음에 room을 숨김
-
-const paintMessage = (message) => {
-  const ul = room.querySelector("ul");
-  const li = document.createElement("li");
-  li.innerText = message;
-  ul.append(li);
+const getCameras = async () => {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cameras = devices.filter((device) => device.kind === "videoinput");
+    const currentCamera = myStream.getVideoTracks()[0]; //현재 사용중인 device
+    cameras.forEach((camera) => {
+      const option = document.createElement("option");
+      option.value = camera.deviceId;
+      option.innerText = camera.label;
+      if (currentCamera.label == camera.label) {
+        option.selected = true;
+      }
+      camerasSelect.append(option);
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-const handleMessageSubmit = (event) => {
-  event.preventDefault();
-  const input = room.querySelector("#msg input");
-  socket.emit("newMessage", input.value, roomName, () => {
-    paintMessage(`You: ${input.value}`); //이부분이 있어야 자신도 메시지 볼 수 있음
-    input.value = "";
-  });
+const getMedia = async (deviceId) => {
+  //deviceId = null
+  const initalConstraints = {
+    audio: true,
+    video: { facingMode: "user" }, //전면카메라
+  };
+  //deviceId=~~
+  const cameraConstraints = {
+    audio: true,
+    video: { deviceId: { exact: deviceId } },
+  };
+
+  try {
+    myStream = await navigator.mediaDevices.getUserMedia(
+      deviceId ? cameraConstraints : initalConstraints
+    );
+    myFace.srcObject = myStream;
+    //deviceId가 없을때만 getCamera paint..안그러면 장치 바꿀때마다 페인트됨
+    if (!deviceId) {
+      await getCameras();
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-const handleNameSubmit = (event) => {
-  event.preventDefault();
-  const input = welcome.querySelector("#nickname input");
-  socket.emit("nickname", input.value);
+getMedia();
+
+const handleMuteBtn = () => {
+  myStream
+    .getAudioTracks()
+    .forEach((track) => (track.enabled = !track.enabled)); //audio track에 대해 enabled값을 현재와 반대로 설정
+  if (!muted) {
+    //소리가 나온다면 mute하고 "unmute"로
+    muted = true;
+    muteBtn.innerText = "Unmute";
+  } else {
+    muted = false;
+    muteBtn.innerText = "Mute";
+  }
 };
 
-//입장하면 showRoom
-const showRoom = () => {
-  welcome.hidden = true;
-  room.hidden = false;
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName}`;
-  //message기능
-  const msgForm = room.querySelector("#msg");
-
-  msgForm.addEventListener("submit", handleMessageSubmit);
+const handleCameraBtn = () => {
+  myStream
+    .getVideoTracks()
+    .forEach((track) => (track.enabled = !track.enabled)); //video track에 대해 enabled 값을 현재와 반대로
+  if (cameraOff) {
+    //Off돼있을 때 btn 누르면 on
+    cameraOff = false;
+    cameraBtn.innerText = "Camera Off";
+  } else {
+    cameraOff = true;
+    cameraBtn.innerText = "Camera On";
+  }
 };
 
-const handleRoomSubmit = (event) => {
-  event.preventDefault();
-  const input = welcome.querySelector("#roomName input");
-  //socket.emit(event, obj, or variables.., cb)
-  socket.emit("enterRoom", input.value, showRoom); //websocket에서는 socket.send()였음. event이름은 작위적
-  roomName = input.value;
-  input.value = "";
+const handleCameraChange = async (event) => {
+  await getMedia(camerasSelect.value); //camera device id
 };
 
-roomNameForm.addEventListener("submit", handleRoomSubmit);
-
-nicknameForm.addEventListener("submit", handleNameSubmit);
-
-socket.on("welcome", (user, newCount) => {
-  const h3 = room.querySelector("h3");
-
-  h3.innerText = `Room ${roomName} (${newCount})`;
-  paintMessage(`${user} joined`);
-});
-
-socket.on("bye", (user, newCount) => {
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room ${roomName} (${newCount})`;
-  paintMessage(`${user} left`);
-});
-
-socket.on("newMessage", (message) => {
-  paintMessage(message);
-});
-
-socket.on("roomChange", (rooms) => {
-  const roomList = welcome.querySelector("ul");
-  roomList.innerText = ""; //룸 리스트를 우선 초기화
-  //다시 현재 열려있는 public rooms 리스트에 대해 paint(disconnect 된 room은 리스트에서 빠짐)
-  rooms.forEach((room) => {
-    const li = document.createElement("li");
-    li.innerText = room;
-    roomList.append(li);
-  });
-});
+muteBtn.addEventListener("click", handleMuteBtn);
+cameraBtn.addEventListener("click", handleCameraBtn);
+camerasSelect.addEventListener("input", handleCameraChange);
