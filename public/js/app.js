@@ -131,6 +131,7 @@ socket.on("welcome", async () => {
 });
 ////peerB
 socket.on("offer", async (offer) => {
+  console.log("received the offer");
   // console.log(offer); //peerA로부터 받은 offer를 출력
   myPeerConnection.setRemoteDescription(offer);
   const answer = await myPeerConnection.createAnswer();
@@ -138,17 +139,40 @@ socket.on("offer", async (offer) => {
   //answer를 peerA로
   myPeerConnection.setLocalDescription(answer);
   socket.emit("answer", answer, roomName);
+  console.log("sent the answer");
+});
+////PeerA
+socket.on("answer", (answer) => {
+  console.log("received the answer");
+  myPeerConnection.setRemoteDescription(answer);
 });
 
-socket.on("answer", (answer) => {
-  myPeerConnection.setRemoteDescription(answer);
+socket.on("ice", (ice) => {
+  console.log("received ICE candidate");
+  myPeerConnection.addIceCandidate(ice);
 });
 
 //RTC code
 function makeConnection() {
   myPeerConnection = new RTCPeerConnection();
+  myPeerConnection.addEventListener("icecandidate", handleIce); //offer-answer과정 다음
+  myPeerConnection.addEventListener("addstream", handleAddStream);
   // console.log(myStream.getTracks()); //video track과 audio track
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
+}
+
+function handleIce(data) {
+  // console.log(data);
+  console.log("sent ICE candidate");
+  socket.emit("ice", data.candidate, roomName);
+}
+
+function handleAddStream(data) {
+  console.log("got an stream from my peer");
+  console.log("Peer's stream", data.stream);
+  console.log("My stream", myStream);
+  const peerFace = document.getElementById("peerFace");
+  peerFace.srcObject = data.stream;
 }
