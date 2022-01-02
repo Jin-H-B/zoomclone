@@ -4,7 +4,8 @@
   "description": "zoom clone using NodeJS, WebRTC and Websockets",
   "main": "index.js",
   "scripts": {
-    "start": "node ./build/server.js",
+    "heroku-postbuild": "npm run build",
+    "start": "node build/server.js",
     "build:server": "babel src -d build --ignore src/public",
     "build:assets": "webpack --mode=production",
     "dev:server": "nodemon",
