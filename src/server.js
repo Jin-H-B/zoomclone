@@ -6,9 +6,9 @@ const app = express();
 const PORT = 3000;
 
 app.set("view engine", "pug");
-app.set("views", __dirname + "/views");
+app.set("views", process.cwd() + "/src/views"); //process.cwd()는 node명령 호출한 작업 dir의 절대경로
 
-app.use("/public", express.static(__dirname + "/public"));
+app.use("/public", express.static(__dirname + "/public")); //__dirname은 실행파일의 절대경로
 app.use("/assets", express.static("assets"));
 
 app.get("/", (req, res) => res.render("home.pug"));
