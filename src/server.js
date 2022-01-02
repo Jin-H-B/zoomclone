@@ -3,7 +3,7 @@ import SocketIO from "socket.io";
 import http from "http";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; //heroku는 process.env.PORT로
 
 app.set("view engine", "pug");
 app.set("views", process.cwd() + "/src/views"); //process.cwd()는 node명령 호출한 작업 dir의 절대경로
