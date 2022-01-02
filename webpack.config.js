@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
   entry: ["regenerator-runtime/runtime.js", "./src/public/js/app.js"],
-  mode: "development",
+  // mode: "development", //packeage.json 통해 명령어 실행
   output: {
     filename: "js/app.js",
     path: path.resolve(__dirname, "assets"),

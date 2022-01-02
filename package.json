@@ -4,8 +4,11 @@
   "description": "zoom clone using NodeJS, WebRTC and Websockets",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon",
-    "assets": "webpack"
+    "start": "node build/server.js",
+    "build:server": "babel src -d build",
+    "build:assets": "webpack --mode=production",
+    "dev:server": "nodemon",
+    "dev:assets": "webpack --mode=development"
   },
   "keywords": [],
   "author": "",
