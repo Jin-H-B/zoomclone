@@ -1,3 +1,5 @@
+import "regenerator-runtime/runtime"; //webpack 사용후 regen..runtime error 해결용
+
 const socket = io(); //백엔드와 소켓 연결
 
 const myFace = document.getElementById("myFace");
@@ -92,6 +94,13 @@ const handleCameraBtn = () => {
 
 const handleCameraChange = async (event) => {
   await getMedia(camerasSelect.value); //camera device id
+  if (myPeerConnection) {
+    const videoTrack = myStream.getVideoTracks()[0];
+    const videoSender = myPeerConnection
+      .getSenders()
+      .find((sender) => sender.track.kind === "video");
+    videoSender.replaceTrack(videoTrack);
+  }
 };
 
 muteBtn.addEventListener("click", handleMuteBtn);

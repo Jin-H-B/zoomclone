@@ -8,7 +8,8 @@ const PORT = 3000;
 app.set("view engine", "pug");
 app.set("views", __dirname + "/views");
 
-app.use("/public", express.static("public"));
+app.use("/public", express.static(__dirname + "/public"));
+app.use("/assets", express.static("assets"));
 
 app.get("/", (req, res) => res.render("home.pug"));
 app.get("/*", (req, res) => res.redirect("/")); //catchall url,, 이외의 url은 모두 홈으로
