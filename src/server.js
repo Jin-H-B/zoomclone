@@ -9,7 +9,7 @@ app.set("view engine", "pug");
 app.set("views", process.cwd() + "/src/views"); //process.cwd()는 node명령 호출한 작업 dir의 절대경로
 
 app.use("/public", express.static(__dirname + "/public")); //__dirname은 실행파일의 절대경로
-app.use("/assets", express.static(__dirname + "assets"));
+app.use("/assets", express.static(__dirname + "/assets"));
 
 app.get("/", (req, res) => res.render("home.pug"));
 app.get("/*", (req, res) => res.redirect("/")); //catchall url,, 이외의 url은 모두 홈으로
