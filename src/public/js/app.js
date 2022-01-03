@@ -163,7 +163,19 @@ socket.on("ice", (ice) => {
 
 //RTC code
 function makeConnection() {
-  myPeerConnection = new RTCPeerConnection();
+  myPeerConnection = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: [
+          "stun:stun.l.google.com:19302",
+          "stun:stun1.l.google.com:19302",
+          "stun:stun2.l.google.com:19302",
+          "stun:stun3.l.google.com:19302",
+          "stun:stun4.l.google.com:19302",
+        ],
+      },
+    ],
+  }); //RTCPeerConnection() 인자에 Google STUN서버 추가..실제 서비스에는 직접 STUN서버 만들어야 함
   myPeerConnection.addEventListener("icecandidate", handleIce); //offer-answer과정 다음
   myPeerConnection.addEventListener("addstream", handleAddStream);
   // console.log(myStream.getTracks()); //video track과 audio track
